@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <!-- React and ReactDOM from CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel to compile JSX on the fly -->
+    <script src="https://unpkg.com/@babel/standalone"></script>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f06, #4c8bf5);
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        /* Card Style */
+        .weather-card {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            max-width: 500px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .weather-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.6);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #fff;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        select, button {
+            font-size: 1.2rem;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        select {
+            width: 250px;
+        }
+
+        button {
+            background-color: #ff8000;
+            color: #fff;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            background-color: #ff5500;
+            transform: scale(1.05);
+        }
+
+        select:hover {
+            background-color: #ffebc8;
+        }
+
+        /* Weather Info Section */
+        #weather-info {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        #weather-info h3 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        #weather-info p {
+            font-size: 1.2rem;
+            margin: 5px 0;
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        const WeatherApp = () => {
+          const [weatherData, setWeatherData] = useState(null);
+          const apiKey = 'fafc1d942dcd656de778e9fdd8556f9e';
+
+          const getWeather = () => {
+            const cityDropdown = document.getElementById('city-dropdown');
+            const city = cityDropdown.value; // Get selected city from the dropdown
+
+            if (!city) {
+              alert('Please select a city');
+              return;
+            }
+
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
+
+            fetch(url)
+              .then((response) => {
+                if (!response.ok) {
+                  throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+              })
+              .then((data) => {
+                if (data.cod === '404') {
+                  alert('City not found');
+                } else {
+                  setWeatherData(data);
+                }
+              })
+              .catch((error) => {
+                console.error(error);
+                alert(error.message.includes('401') ? 'Unauthorized: Check your API key.' : 'Error fetching weather data.');
+              });
+          };
+
+          return (
+            <div className="weather-card">
+              <h1>Weather App</h1>
+              <select id="city-dropdown">
+                <option value="Johannesburg">Johannesburg</option>
+                <option value="Port Elizabeth">Port Elizabeth</option>
+                <option value="Limpopo">Limpopo</option>
+                <option value="Free State">Free State</option>
+                <option value="Bloemfontein">Bloemfontein</option>
+                <option value="Cape Town">Cape Town</option>
+                <option value="Durban">Durban</option>
+              </select>
+              <button onClick={getWeather}>Get Weather</button>
+
+              {weatherData && (
+                <div id="weather-info">
+                  <h3>Weather in {weatherData.name}, {weatherData.sys.country}</h3>
+                  <p><strong>Temperature:</strong> {weatherData.main.temp}°C</p>
+                  <p><strong>Condition:</strong> {weatherData.weather[0].description}</p>
+                  <p><strong>Humidity:</strong> {weatherData.main.humidity}%</p>
+                </div>
+              )}
+            </div>
+          );
+        };
+
+        // Render the WeatherApp component into the 'root' div
+        ReactDOM.render(<WeatherApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>
